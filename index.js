@@ -19,17 +19,26 @@ async function scrapeMainPage() {
   const page = await browser.newPage()
   const url = 'https://www.criterion.com/shop/browse/list?sort=spine_number'
   await page.goto(url, { waitUntil: 'load', timeout: 0 })
-
-  const filmUrls = await page.evaluate(() =>
-    Array.from(document.querySelectorAll('.gridFilm')).map(film =>
-      film.getAttribute('data-href')
+  let filmUrls = await page.$$('.gridFilm')
+  let arr = []
+  for (let film of filmUrls) {
+    const spine = await film.$eval('.g-spine', el => el.innerText)
+    const title = await film.$eval('.g-title', el => el.innerText)
+    const year = await film.$eval('.g-year', el => el.innerText)
+    const director = await film.$eval('.g-director', el => el.innerText)
+    const country = await film.$eval('.g-country', el => el.innerText)
+    const coverUrl = await film.$eval('img', el =>
+      el.src.replace('_thumbnail.jpg', '_small.jpg')
     )
-  )
 
-  const data = JSON.stringify(filmUrls)
-  fs.writeFileSync('data.json', data)
+    arr.push({ spine, title, year, director, country, coverUrl })
+  }
+  arr = arr.filter(item => item.spine)
+
+  // const data = JSON.stringify(filmUrls)
+  // fs.writeFileSync('data.json', data)
   await browser.close()
-  console.log('JSON data is saved.')
+  console.log(arr[arr.length - 1])
 }
 
-// scrapeMainPage()
+scrapeMainPage()
