@@ -22,6 +22,7 @@ async function scrapeMainPage() {
   let filmUrls = await page.$$('.gridFilm')
   let arr = []
   for (let film of filmUrls) {
+    const filmUrl = await film.evaluate(film => film.getAttribute('data-href'))
     const spine = await film.$eval('.g-spine', el => el.innerText)
     const title = await film.$eval('.g-title', el => el.innerText)
     const year = await film.$eval('.g-year', el => el.innerText)
@@ -31,7 +32,7 @@ async function scrapeMainPage() {
       el.src.replace('_thumbnail.jpg', '_small.jpg')
     )
 
-    arr.push({ spine, title, year, director, country, coverUrl })
+    arr.push({ filmUrl, spine, title, year, director, country, coverUrl })
   }
   arr = arr.filter(item => item.spine)
 
